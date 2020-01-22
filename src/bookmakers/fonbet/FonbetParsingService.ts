@@ -2,7 +2,8 @@ import {BookmakerParsingService} from "../BookmakerParsingService";
 import {CommonFormats} from "../../types/Odds";
 import {Requester} from "../../utils/Requester";
 import {FactorsCatalog} from "./FactorsCatalog";
-import {Fonbet} from "./Fonbet";
+import {Updates} from "./Updates/Updates";
+import {General} from "./General";
 const fonbetSports = require("./sports/sports");
 
 
@@ -10,9 +11,9 @@ export class FonbetParsingService extends BookmakerParsingService {
   private factorsCatalog: { [id: number]: FactorsCatalog.FactorExtrass } = {};
   private factorsCatalogRequester: Requester;
 
-  private subscribedSports: { [id: number]: Fonbet.Sport } = {};
-  private sports: { [id: number]: Fonbet.Sport } = {};
-  private events: { [id: number]: Fonbet.Event } = {};
+  private subscribedSports: { [id: number]: Updates.Sport } = {};
+  private sports: { [id: number]: Updates.Sport } = {};
+  private events: { [id: number]: Updates.Event } = {};
   private factors: { [id: string]: CommonFormats.Factor } = {};
 
   private updatesRequester: Requester;
@@ -95,31 +96,31 @@ export class FonbetParsingService extends BookmakerParsingService {
     });
   }
 
-  private handleUpdate(update: Fonbet.Update) {
+  private handleUpdate(update: Updates.Update) {
     this.updateSports(update.sports);
     this.updateEvents(update.events);
     this.updateFactors(update.customFactors);
     this.pourFactors();
   }
 
-  private updateSports(sportsUpdates: Fonbet.Sport[]) {
+  private updateSports(sportsUpdates: Updates.Sport[]) {
     this.sports = {};
     for (let sportId in this.subscribedSports)
       this.sports[sportId] = this.subscribedSports[sportId];
 
-    sportsUpdates.forEach( (sportUpdate: Fonbet.Sport) => {
+    sportsUpdates.forEach( (sportUpdate: Updates.Sport) => {
       // Add a new Sport if it doesn't already exist
       if (!this.sports.hasOwnProperty(sportUpdate.id))
         this.sports[sportUpdate.id] = sportUpdate;
     });
   }
 
-  private updateEvents(eventsUpdates: Fonbet.Event[]) {
+  private updateEvents(eventsUpdates: Updates.Event[]) {
     this.events = {};
-    eventsUpdates.forEach( (eventUpdate: Fonbet.Event) => this.events[eventUpdate.id] = eventUpdate );
+    eventsUpdates.forEach( (eventUpdate: Updates.Event) => this.events[eventUpdate.id] = eventUpdate );
   }
 
-  private updateFactors(factorsUpdates: Fonbet.Factor[]) {
+  private updateFactors(factorsUpdates: Updates.Factor[]) {
     // Set odds status to outdated
     for (let factorId in this.factors)
       this.factors[factorId].deleted = true;
@@ -131,30 +132,25 @@ export class FonbetParsingService extends BookmakerParsingService {
     });
   }
 
-  private makeFactor(factorUpdate: Fonbet.Factor): CommonFormats.Factor | null {
+  private makeFactor(factorUpdate: Updates.Factor): CommonFormats.Factor | null {
     if (!this.events[factorUpdate.e])
       throw Error(`The event #${factorUpdate.e} doesn't exist`);
 
     const event = this.events[factorUpdate.e];
     const mainEvent = this.getTopEvent(event);
 
-    event.team1Id = mainEvent.team1Id;
-    event.team2Id = mainEvent.team2Id;
-    event.team1 = mainEvent.team1;
-    event.team2 = mainEvent.team2;
-
     const sport = this.sports[event.sportId];
     const mainSport = this.getTopSport(sport);
-    sport.mainSportName = mainSport.name;
-
-    factorUpdate.info = this.factorsCatalog[factorUpdate.f];
 
     if (!this.subscribedSports.hasOwnProperty( mainSport.id )) return null;
 
-    return fonbetSports[sport.mainSportName].makeOdds(sport, event, factorUpdate);
+    const factorInfo = this.factorsCatalog[factorUpdate.f];
+    const scopeType = new General.SportEvent(sport, mainSport.name, mainEvent);
+
+    return fonbetSports[mainSport.name].makeFactor(scopeType, sport, event, factorUpdate, factorInfo);
   }
 
-  getTopSport(sport: Fonbet.Sport) {
+  getTopSport(sport: Updates.Sport) {
     let topSport = sport;
 
     while (topSport.parentId)
@@ -162,7 +158,7 @@ export class FonbetParsingService extends BookmakerParsingService {
 
     return topSport;
   }
-  getTopEvent(event: Fonbet.Event) {
+  getTopEvent(event: Updates.Event) {
     let topEvent = event;
 
     while (topEvent.parentId)

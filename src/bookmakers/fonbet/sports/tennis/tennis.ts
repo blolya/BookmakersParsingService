@@ -1,22 +1,18 @@
-import {Fonbet} from "../../Fonbet";
+import {Updates} from "../../Updates/Updates";
 import {CommonFormats} from "../../../../types/Odds";
 
 
 module.exports = {
   id: 4,
-  makeOdds: (sport: Fonbet.Sport, event: Fonbet.Event, factor: Fonbet.Factor) => {
+  sport: CommonFormats.Sport.TENNIS,
+  makeFactor: (
+    sportEvent: CommonFormats.SportEvent, sport: Updates.Sport,
+    event: Updates.Event, factor: Updates.Factor,
+    factorInfo: {title: string, subtitle: string, outcome: string}
+    ) => {
 
-    const sportEvent = {
-      sport: CommonFormats.Sport.TENNIS,
-      league: sport.name.substring(sport.name.indexOf(".") + 2),
-      firstName: event.team1,
-      secondName: event.team2
-    };
-
-    let scope = {
-      type: CommonFormats.ScopeType.MATCH,
-      set: 0,
-      game: 0
+    let scope: CommonFormats.Scope = {
+      type: CommonFormats.ScopeType.MATCH
     };
 
     let set = 0;
@@ -28,18 +24,17 @@ module.exports = {
 
         scope = {
           type: CommonFormats.ScopeType.SET,
-          set: set,
-          game: 0
+          set: set
         };
       }
     }
 
     let betType = {};
 
-    if (factor.info.title === "1X2") {
+    if (factorInfo.title === "1X2") {
 
-      const outcome = factor.info.outcome === "1" ?CommonFormats.Outcome.ONE :
-        factor.info.outcome === "2" ? CommonFormats.Outcome.TWO : "";
+      const outcome = factorInfo.outcome === "1" ?CommonFormats.Outcome.ONE :
+        factorInfo.outcome === "2" ? CommonFormats.Outcome.TWO : "";
 
       betType = {
         type: CommonFormats.EBetType.WIN,
@@ -47,42 +42,42 @@ module.exports = {
       }
     }
 
-    if (factor.info.title === "Total" || factor.info.title === "Totals") {
-      if (factor.info.subtitle === "") {
+    if (factorInfo.title === "Total" || factorInfo.title === "Totals") {
+      if (factorInfo.subtitle === "") {
         betType = {
           type: CommonFormats.EBetType.TOTAL,
           subject: CommonFormats.ETotalSubject.ALL,
-          direction: factor.info.outcome === "O" ? CommonFormats.ETotalDirection.OVER : CommonFormats.ETotalDirection.UNDER,
+          direction: factorInfo.outcome === "O" ? CommonFormats.ETotalDirection.OVER : CommonFormats.ETotalDirection.UNDER,
           total: parseFloat(factor.pt)
         }
       }
     }
 
-    if (factor.info.title === "Team Totals-1") {
-      if (factor.info.subtitle === "") {
+    if (factorInfo.title === "Team Totals-1") {
+      if (factorInfo.subtitle === "") {
         betType = {
           type: CommonFormats.EBetType.TOTAL,
           subject: CommonFormats.ETotalSubject.TEAM1,
-          direction: factor.info.outcome === "O" ? CommonFormats.ETotalDirection.OVER : CommonFormats.ETotalDirection.UNDER,
+          direction: factorInfo.outcome === "O" ? CommonFormats.ETotalDirection.OVER : CommonFormats.ETotalDirection.UNDER,
           total: parseFloat(factor.pt)
         }
       }
     }
 
-    if (factor.info.title === "Team Totals-2") {
-      if (factor.info.subtitle === "") {
+    if (factorInfo.title === "Team Totals-2") {
+      if (factorInfo.subtitle === "") {
         betType = {
           type: CommonFormats.EBetType.TOTAL,
           subject: CommonFormats.ETotalSubject.TEAM2,
-          direction: factor.info.outcome === "O" ? CommonFormats.ETotalDirection.OVER : CommonFormats.ETotalDirection.UNDER,
+          direction: factorInfo.outcome === "O" ? CommonFormats.ETotalDirection.OVER : CommonFormats.ETotalDirection.UNDER,
           total: parseFloat(factor.pt)
         }
       }
     }
 
-    if (factor.info.title === "By games" || factor.info.title === "Hcap") {
-      const side = factor.info.outcome === "1" ? CommonFormats.EHandicapSide.TEAM1 :
-        factor.info.outcome === "2" ? CommonFormats.EHandicapSide.TEAM2 : "";
+    if (factorInfo.title === "By games" || factorInfo.title === "Hcap") {
+      const side = factorInfo.outcome === "1" ? CommonFormats.EHandicapSide.TEAM1 :
+        factorInfo.outcome === "2" ? CommonFormats.EHandicapSide.TEAM2 : "";
 
       betType = {
         type: CommonFormats.EBetType.HANDICAP,
@@ -91,10 +86,10 @@ module.exports = {
       };
     }
 
-    if (factor.info.title === "Games" && factor.info.subtitle === "Game %P") {
+    if (factorInfo.title === "Games" && factorInfo.subtitle === "Game %P") {
       const outcome =
-        factor.info.outcome === "%1" ? CommonFormats.Outcome.ONE :
-          factor.info.outcome === "%2" ? CommonFormats.Outcome.TWO : "";
+        factorInfo.outcome === "%1" ? CommonFormats.Outcome.ONE :
+          factorInfo.outcome === "%2" ? CommonFormats.Outcome.TWO : "";
 
       scope = {
         type: CommonFormats.ScopeType.GAME,
@@ -107,7 +102,7 @@ module.exports = {
       };
     }
 
-    if (factor.info.title === "Games special") {
+    if (factorInfo.title === "Games special") {
       scope = {
         type: CommonFormats.ScopeType.GAME,
         set: set,
@@ -115,8 +110,8 @@ module.exports = {
       };
       betType = {
         type: CommonFormats.EBetType.TWO_WAY,
-        subject: factor.info.subtitle.replace("%P", factor.pt),
-        result: factor.info.outcome === "yes"
+        subject: factorInfo.subtitle.replace("%P", factor.pt),
+        result: factorInfo.outcome === "yes"
       }
     }
     return {

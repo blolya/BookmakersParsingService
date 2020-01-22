@@ -1,4 +1,4 @@
-export namespace Fonbet {
+export namespace Updates {
 
   export type Factor = {
     e: number,
@@ -6,12 +6,7 @@ export namespace Fonbet {
     v: number,
     p: number,
     pt: string,
-    isLive: boolean,
-    info: {
-      title: string,
-      subtitle: string,
-      outcome: string
-    }
+    isLive: boolean
   }
 
   export type Event = {
@@ -41,8 +36,7 @@ export namespace Fonbet {
     kind: string,
     regionId: number,
     sortOrder: string,
-    name: string,
-    mainSportName?: string
+    name: string
   }
 
   export type Update = {

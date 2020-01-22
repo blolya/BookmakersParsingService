@@ -15,6 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var BookmakerParsingService_1 = require("../BookmakerParsingService");
 var Requester_1 = require("../../utils/Requester");
+var General_1 = require("./General");
 var fonbetSports = require("./sports/sports");
 var FonbetParsingService = /** @class */ (function (_super) {
     __extends(FonbetParsingService, _super);
@@ -128,17 +129,13 @@ var FonbetParsingService = /** @class */ (function (_super) {
             throw Error("The event #" + factorUpdate.e + " doesn't exist");
         var event = this.events[factorUpdate.e];
         var mainEvent = this.getTopEvent(event);
-        event.team1Id = mainEvent.team1Id;
-        event.team2Id = mainEvent.team2Id;
-        event.team1 = mainEvent.team1;
-        event.team2 = mainEvent.team2;
         var sport = this.sports[event.sportId];
         var mainSport = this.getTopSport(sport);
-        sport.mainSportName = mainSport.name;
-        factorUpdate.info = this.factorsCatalog[factorUpdate.f];
         if (!this.subscribedSports.hasOwnProperty(mainSport.id))
             return null;
-        return fonbetSports[sport.mainSportName].makeOdds(sport, event, factorUpdate);
+        var factorInfo = this.factorsCatalog[factorUpdate.f];
+        var scopeType = new General_1.General.SportEvent(sport, mainSport.name, mainEvent);
+        return fonbetSports[mainSport.name].makeFactor(scopeType, sport, event, factorUpdate, factorInfo);
     };
     FonbetParsingService.prototype.getTopSport = function (sport) {
         var topSport = sport;
