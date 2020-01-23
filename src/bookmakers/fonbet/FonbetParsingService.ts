@@ -1,31 +1,31 @@
 import {BookmakerParsingService} from "../BookmakerParsingService";
 import {CommonFormats} from "../../types/Odds";
 import {Requester} from "../../utils/Requester";
-import {FactorsCatalog} from "./FactorsCatalog";
-import {Updates} from "./Updates/Updates";
+import {FactorsCatalogUpdate} from "./updates/FactorsCatalogUpdate";
+import {Update} from "./updates/Update";
 import {General} from "./General";
 const fonbetSports = require("./sports/sports");
 
 
 export class FonbetParsingService extends BookmakerParsingService {
-  private factorsCatalog: { [id: number]: FactorsCatalog.FactorExtrass } = {};
   private factorsCatalogRequester: Requester;
-
-  private subscribedSports: { [id: number]: Updates.Sport } = {};
-  private sports: { [id: number]: Updates.Sport } = {};
-  private events: { [id: number]: Updates.Event } = {};
-  private factors: { [id: string]: CommonFormats.Factor } = {};
-
   private updatesRequester: Requester;
+
+  private factorsCatalog: { [id: number]: FactorsCatalogUpdate.Extrass } = {};
+  private subscribedSports: { [id: number]: Update.Sport } = {};
+
+  private sports: { [id: number]: Update.Sport } = {};
+  private events: { [id: number]: Update.Event } = {};
+  private factors: { [id: string]: CommonFormats.Factor } = {};
 
   constructor() {
     super();
 
-    this.factorsCatalogRequester = new Requester("https://line11.bkfon-resource.ru/line/factorsCatalog/tables/?lang=en&version=0", {gzip: true});
+    this.factorsCatalogRequester = new Requester(FactorsCatalogUpdate.url, {gzip: true});
     this.factorsCatalogRequester.on("response", rawFactorsCatalog =>
       this.updateFactorsCatalog( JSON.parse(rawFactorsCatalog) ));
 
-    this.updatesRequester = new Requester("https://line01i.bkfon-resource.ru/live/updatesFromVersion/3184630894/en", {gzip: true});
+    this.updatesRequester = new Requester(Update.url, {gzip: true});
     this.updatesRequester.on("response", rawUpdate => this.handleUpdate( JSON.parse(rawUpdate) ))
   }
 
@@ -53,15 +53,14 @@ export class FonbetParsingService extends BookmakerParsingService {
 
   }
 
-  private updateFactorsCatalog(factorsCatalogUpdate: FactorsCatalog.FactorsCatalogUpdate) {
+  private updateFactorsCatalog(factorsCatalogUpdate: FactorsCatalogUpdate.Catalog) {
     // Clear current factors catalog
     this.factorsCatalog = {};
 
     factorsCatalogUpdate.groups.forEach( (group) => {
       group.tables.forEach( table => {
-
-        const tableHeader: FactorsCatalog.FactorsCatalogUpdateRow = table.rows[0];
-        const tableBody: FactorsCatalog.FactorsCatalogUpdateRow[] = table.rows.slice(1);
+        const tableHeader: FactorsCatalogUpdate.Row = table.rows[0];
+        const tableBody: FactorsCatalogUpdate.Row[] = table.rows.slice(1);
 
         let subtitle: string = "";
 
@@ -96,31 +95,31 @@ export class FonbetParsingService extends BookmakerParsingService {
     });
   }
 
-  private handleUpdate(update: Updates.Update) {
+  private handleUpdate(update: Update.Update) {
     this.updateSports(update.sports);
     this.updateEvents(update.events);
     this.updateFactors(update.customFactors);
     this.pourFactors();
   }
 
-  private updateSports(sportsUpdates: Updates.Sport[]) {
+  private updateSports(sportsUpdates: Update.Sport[]) {
     this.sports = {};
     for (let sportId in this.subscribedSports)
       this.sports[sportId] = this.subscribedSports[sportId];
 
-    sportsUpdates.forEach( (sportUpdate: Updates.Sport) => {
+    sportsUpdates.forEach( (sportUpdate: Update.Sport) => {
       // Add a new Sport if it doesn't already exist
       if (!this.sports.hasOwnProperty(sportUpdate.id))
         this.sports[sportUpdate.id] = sportUpdate;
     });
   }
 
-  private updateEvents(eventsUpdates: Updates.Event[]) {
+  private updateEvents(eventsUpdates: Update.Event[]) {
     this.events = {};
-    eventsUpdates.forEach( (eventUpdate: Updates.Event) => this.events[eventUpdate.id] = eventUpdate );
+    eventsUpdates.forEach( (eventUpdate: Update.Event) => this.events[eventUpdate.id] = eventUpdate );
   }
 
-  private updateFactors(factorsUpdates: Updates.Factor[]) {
+  private updateFactors(factorsUpdates: Update.Factor[]) {
     // Set odds status to outdated
     for (let factorId in this.factors)
       this.factors[factorId].deleted = true;
@@ -132,7 +131,7 @@ export class FonbetParsingService extends BookmakerParsingService {
     });
   }
 
-  private makeFactor(factorUpdate: Updates.Factor): CommonFormats.Factor | null {
+  private makeFactor(factorUpdate: Update.Factor): CommonFormats.Factor | null {
     if (!this.events[factorUpdate.e])
       throw Error(`The event #${factorUpdate.e} doesn't exist`);
 
@@ -150,7 +149,7 @@ export class FonbetParsingService extends BookmakerParsingService {
     return fonbetSports[mainSport.name].makeFactor(scopeType, sport, event, factorUpdate, factorInfo);
   }
 
-  getTopSport(sport: Updates.Sport) {
+  getTopSport(sport: Update.Sport) {
     let topSport = sport;
 
     while (topSport.parentId)
@@ -158,7 +157,7 @@ export class FonbetParsingService extends BookmakerParsingService {
 
     return topSport;
   }
-  getTopEvent(event: Updates.Event) {
+  getTopEvent(event: Update.Event) {
     let topEvent = event;
 
     while (topEvent.parentId)

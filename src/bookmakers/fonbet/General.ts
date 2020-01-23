@@ -1,10 +1,10 @@
 import {CommonFormats} from "../../types/Odds";
-import {Updates} from "./Updates/Updates";
+import {Update} from "./updates/Update";
 const sports = require("./sports/sports");
 
 export namespace General {
   export class SportEvent implements CommonFormats.SportEvent {
-    constructor(sport: Updates.Sport, sportName: string, mainEvent: Updates.Event) {
+    constructor(sport: Update.Sport, sportName: string, mainEvent: Update.Event) {
       this.sport = sports[sportName].sport;
       this.league = sport.name.substring(sport.name.indexOf(".") + 2);
       this.firstName = mainEvent.team1;

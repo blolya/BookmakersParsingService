@@ -4,4 +4,4 @@ var Updates;
 (function (Updates) {
     SportsEventsFactors;
 })(Updates = exports.Updates || (exports.Updates = {}));
-//# sourceMappingURL=Updates.js.map
+//# sourceMappingURL=Update.js.map

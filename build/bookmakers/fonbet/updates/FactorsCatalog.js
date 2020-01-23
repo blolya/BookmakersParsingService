@@ -1,3 +1,3 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//# sourceMappingURL=FactorsCatalog.js.map
+//# sourceMappingURL=Catalog.js.map

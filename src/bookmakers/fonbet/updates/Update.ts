@@ -1,4 +1,6 @@
-export namespace Updates {
+export namespace Update {
+
+  export const url = "https://line01i.bkfon-resource.ru/live/updatesFromVersion/3184630894/en";
 
   export type Factor = {
     e: number,

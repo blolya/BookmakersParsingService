@@ -15,6 +15,8 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var BookmakerParsingService_1 = require("../BookmakerParsingService");
 var Requester_1 = require("../../utils/Requester");
+var FactorsCatalogUpdate_1 = require("./updates/FactorsCatalogUpdate");
+var Update_1 = require("./updates/Update");
 var General_1 = require("./General");
 var fonbetSports = require("./sports/sports");
 var FonbetParsingService = /** @class */ (function (_super) {
@@ -26,11 +28,11 @@ var FonbetParsingService = /** @class */ (function (_super) {
         _this.sports = {};
         _this.events = {};
         _this.factors = {};
-        _this.factorsCatalogRequester = new Requester_1.Requester("https://line11.bkfon-resource.ru/line/factorsCatalog/tables/?lang=en&version=0", { gzip: true });
+        _this.factorsCatalogRequester = new Requester_1.Requester(FactorsCatalogUpdate_1.FactorsCatalogUpdate.url, { gzip: true });
         _this.factorsCatalogRequester.on("response", function (rawFactorsCatalog) {
             return _this.updateFactorsCatalog(JSON.parse(rawFactorsCatalog));
         });
-        _this.updatesRequester = new Requester_1.Requester("https://line01i.bkfon-resource.ru/live/updatesFromVersion/3184630894/en", { gzip: true });
+        _this.updatesRequester = new Requester_1.Requester(Update_1.Update.url, { gzip: true });
         _this.updatesRequester.on("response", function (rawUpdate) { return _this.handleUpdate(JSON.parse(rawUpdate)); });
         return _this;
     }

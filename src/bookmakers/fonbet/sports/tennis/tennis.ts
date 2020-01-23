@@ -1,4 +1,4 @@
-import {Updates} from "../../Updates/Updates";
+import {Update} from "../../updates/Update";
 import {CommonFormats} from "../../../../types/Odds";
 
 
@@ -6,8 +6,8 @@ module.exports = {
   id: 4,
   sport: CommonFormats.Sport.TENNIS,
   makeFactor: (
-    sportEvent: CommonFormats.SportEvent, sport: Updates.Sport,
-    event: Updates.Event, factor: Updates.Factor,
+    sportEvent: CommonFormats.SportEvent, sport: Update.Sport,
+    event: Update.Event, factor: Update.Factor,
     factorInfo: {title: string, subtitle: string, outcome: string}
     ) => {
 
