@@ -2,10 +2,11 @@ import {BookmakerParsingService} from "../BookmakerParsingService";
 import {CommonFormats} from "../../types/Odds";
 import {Requester} from "../../utils/Requester";
 import {FactorsCatalogUpdate} from "./updates/FactorsCatalogUpdate";
-import {Update} from "./updates/Update";
+import {Update} from "./updates/GeneralUpdate";
 import {FonbetGeneral} from "./FonbetGeneral";
-import {FonbetSports} from "./sports/FonbetSports";
+import {fonbetSports} from "./sports/fonbetSports";
 import {TennisCommonFormats} from "./sports/tennis/TennisCommonFormats";
+import {BasketballCommonFormats} from "./sports/basketball/BasketballCommonFormats";
 
 export class FonbetParsingService extends BookmakerParsingService {
   private factorsCatalogRequester: Requester;
@@ -39,7 +40,7 @@ export class FonbetParsingService extends BookmakerParsingService {
     if (!sport)
       return;
 
-    const sportId = FonbetSports.sports[sport].id;
+    const sportId = fonbetSports[sport].id;
 
     if (!this.subscribedSports[sportId])
       this.subscribedSports[sportId] = {
@@ -162,9 +163,12 @@ export class FonbetParsingService extends BookmakerParsingService {
 
     if (sport.sport === CommonFormats.Sport.TENNIS) {
       return new TennisCommonFormats.Factor(sport, event, factor);
-    } else {
-      return null;
     }
+    if (sport.sport === CommonFormats.Sport.BASKETBALL) {
+      return new BasketballCommonFormats.Factor(sport, event, factor);
+    }
+
+    return null;
   }
 
   getTopSport(sport: FonbetGeneral.Sport) {

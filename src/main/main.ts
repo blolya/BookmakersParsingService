@@ -8,7 +8,9 @@ const main = () => {
   fps.subscribeToSports([CommonFormats.Sport.TENNIS]);
 
   fps.on("factor", (factor: CommonFormats.Factor) => {
-      console.log(factor);
+    if (factor.extra.eventParentId === 19041117)
+      if (factor.betType.type === CommonFormats.EBetType.WIN)
+        console.log(factor);
   })
 
 };

@@ -17,10 +17,11 @@ var BookmakerParsingService_1 = require("../BookmakerParsingService");
 var Odds_1 = require("../../types/Odds");
 var Requester_1 = require("../../utils/Requester");
 var FactorsCatalogUpdate_1 = require("./updates/FactorsCatalogUpdate");
-var Update_1 = require("./updates/Update");
+var GeneralUpdate_1 = require("./updates/GeneralUpdate");
 var FonbetGeneral_1 = require("./FonbetGeneral");
-var FonbetSports_1 = require("./sports/FonbetSports");
+var fonbetSports_1 = require("./sports/fonbetSports");
 var TennisCommonFormats_1 = require("./sports/tennis/TennisCommonFormats");
+var BasketballCommonFormats_1 = require("./sports/basketball/BasketballCommonFormats");
 var FonbetParsingService = /** @class */ (function (_super) {
     __extends(FonbetParsingService, _super);
     function FonbetParsingService() {
@@ -34,7 +35,7 @@ var FonbetParsingService = /** @class */ (function (_super) {
         _this.factorsCatalogRequester.on("response", function (rawFactorsCatalog) {
             return _this.updateFactorsCatalog(JSON.parse(rawFactorsCatalog));
         });
-        _this.updatesRequester = new Requester_1.Requester(Update_1.Update.url, { gzip: true });
+        _this.updatesRequester = new Requester_1.Requester(GeneralUpdate_1.Update.url, { gzip: true });
         _this.updatesRequester.on("response", function (rawUpdate) { return _this.handleUpdate(JSON.parse(rawUpdate)); });
         return _this;
     }
@@ -48,7 +49,7 @@ var FonbetParsingService = /** @class */ (function (_super) {
     FonbetParsingService.prototype.subscribeToSport = function (sport) {
         if (!sport)
             return;
-        var sportId = FonbetSports_1.FonbetSports.sports[sport].id;
+        var sportId = fonbetSports_1.fonbetSports[sport].id;
         if (!this.subscribedSports[sportId])
             this.subscribedSports[sportId] = {
                 id: sportId,
@@ -149,9 +150,10 @@ var FonbetParsingService = /** @class */ (function (_super) {
         if (sport.sport === Odds_1.CommonFormats.Sport.TENNIS) {
             return new TennisCommonFormats_1.TennisCommonFormats.Factor(sport, event, factor);
         }
-        else {
-            return null;
+        if (sport.sport === Odds_1.CommonFormats.Sport.BASKETBALL) {
+            return new BasketballCommonFormats_1.BasketballCommonFormats.Factor(sport, event, factor);
         }
+        return null;
     };
     FonbetParsingService.prototype.getTopSport = function (sport) {
         var topSport = sport;

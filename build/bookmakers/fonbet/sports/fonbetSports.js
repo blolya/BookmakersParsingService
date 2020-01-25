@@ -15,4 +15,4 @@ exports.fonbetSports = {
         sport: Odds_1.CommonFormats.Sport.TENNIS
     }
 };
-//# sourceMappingURL=FonbetSports.js.map
+//# sourceMappingURL=fonbetSports.js.map

@@ -1,6 +1,5 @@
 import {CommonFormats} from "../../types/Odds";
-import {Update} from "./updates/Update";
-import {FonbetSports} from "./sports/FonbetSports";
+import {Update} from "./updates/GeneralUpdate";
 import {FactorsCatalogUpdate} from "./updates/FactorsCatalogUpdate";
 
 
@@ -52,17 +51,4 @@ export namespace FonbetGeneral {
     public sport?: CommonFormats.Sport;
   }
 
-  export class SportEvent implements CommonFormats.SportEvent {
-    constructor(sport: Update.Sport, sportName: string, mainEvent: Update.Event) {
-      this.sport = FonbetSports.sports[sportName].sport;
-      this.league = sport.name.substring(sport.name.indexOf(".") + 2);
-      this.firstName = mainEvent.team1;
-      this.secondName = mainEvent.team2;
-    }
-
-    sport: CommonFormats.Sport;
-    league: string;
-    firstName: string;
-    secondName: string;
-  }
 }

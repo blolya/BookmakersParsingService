@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var FonbetSports_1 = require("./sports/FonbetSports");
 var FonbetGeneral;
 (function (FonbetGeneral) {
     var Factor = /** @class */ (function () {
@@ -41,15 +40,5 @@ var FonbetGeneral;
         return Sport;
     }());
     FonbetGeneral.Sport = Sport;
-    var SportEvent = /** @class */ (function () {
-        function SportEvent(sport, sportName, mainEvent) {
-            this.sport = FonbetSports_1.FonbetSports.sports[sportName].sport;
-            this.league = sport.name.substring(sport.name.indexOf(".") + 2);
-            this.firstName = mainEvent.team1;
-            this.secondName = mainEvent.team2;
-        }
-        return SportEvent;
-    }());
-    FonbetGeneral.SportEvent = SportEvent;
 })(FonbetGeneral = exports.FonbetGeneral || (exports.FonbetGeneral = {}));
 //# sourceMappingURL=FonbetGeneral.js.map
