@@ -126,7 +126,6 @@ export class FonbetParsingService extends BookmakerParsingService {
 
     factorsUpdates.forEach( factorUpdate => {
       const factor = this.makeFactor(factorUpdate);
-
       if (factor) this.factors["" + factorUpdate.e + factorUpdate.f] = factor;
     });
   }
@@ -141,7 +140,7 @@ export class FonbetParsingService extends BookmakerParsingService {
     const sport = this.sports[event.sportId];
     const mainSport = this.getTopSport(sport);
 
-    if (!this.subscribedSports.hasOwnProperty( mainSport.id )) return null;
+    if (!this.subscribedSports[mainSport.id]) return null;
 
     const factorInfo = this.factorsCatalog[factorUpdate.f];
     const scopeType = new General.SportEvent(sport, mainSport.name, mainEvent);

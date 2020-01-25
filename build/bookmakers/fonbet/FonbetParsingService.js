@@ -133,7 +133,7 @@ var FonbetParsingService = /** @class */ (function (_super) {
         var mainEvent = this.getTopEvent(event);
         var sport = this.sports[event.sportId];
         var mainSport = this.getTopSport(sport);
-        if (!this.subscribedSports.hasOwnProperty(mainSport.id))
+        if (!this.subscribedSports[mainSport.id])
             return null;
         var factorInfo = this.factorsCatalog[factorUpdate.f];
         var scopeType = new General_1.General.SportEvent(sport, mainSport.name, mainEvent);

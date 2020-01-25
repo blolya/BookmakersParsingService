@@ -3,11 +3,13 @@ import {CommonFormats} from "../types/Odds";
 
 
 const main = (): void => {
+
   const fps = new FonbetParsingService();
   fps.subscribeToSports([CommonFormats.Sport.TENNIS]);
 
-  fps.on("factor", (factor: any): void => {
-    console.log(factor);
+  fps.on("factor", (factor: CommonFormats.Factor) => {
+    if (factor.betType.type)
+      console.log(factor);
   })
 
 };

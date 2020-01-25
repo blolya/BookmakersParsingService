@@ -6,7 +6,8 @@ var main = function () {
     var fps = new FonbetParsingService_1.FonbetParsingService();
     fps.subscribeToSports([Odds_1.CommonFormats.Sport.TENNIS]);
     fps.on("factor", function (factor) {
-        console.log(factor);
+        if (factor.betType.type)
+            console.log(factor);
     });
 };
 main();
