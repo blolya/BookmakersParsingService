@@ -14,11 +14,13 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var BookmakerParsingService_1 = require("../BookmakerParsingService");
+var Odds_1 = require("../../types/Odds");
 var Requester_1 = require("../../utils/Requester");
 var FactorsCatalogUpdate_1 = require("./updates/FactorsCatalogUpdate");
 var Update_1 = require("./updates/Update");
-var General_1 = require("./General");
-var fonbetSports = require("./sports/sports");
+var FonbetGeneral_1 = require("./FonbetGeneral");
+var FonbetSports_1 = require("./sports/FonbetSports");
+var TennisCommonFormats_1 = require("./sports/tennis/TennisCommonFormats");
 var FonbetParsingService = /** @class */ (function (_super) {
     __extends(FonbetParsingService, _super);
     function FonbetParsingService() {
@@ -46,15 +48,13 @@ var FonbetParsingService = /** @class */ (function (_super) {
     FonbetParsingService.prototype.subscribeToSport = function (sport) {
         if (!sport)
             return;
-        var sportId = fonbetSports[sport].id;
+        var sportId = FonbetSports_1.FonbetSports.sports[sport].id;
         if (!this.subscribedSports[sportId])
             this.subscribedSports[sportId] = {
                 id: sportId,
                 parentId: 0,
-                kind: "",
-                regionId: 0,
-                sortOrder: "",
-                name: sport
+                name: sport,
+                sport: sport
             };
     };
     FonbetParsingService.prototype.updateFactorsCatalog = function (factorsCatalogUpdate) {
@@ -107,13 +107,17 @@ var FonbetParsingService = /** @class */ (function (_super) {
         sportsUpdates.forEach(function (sportUpdate) {
             // Add a new Sport if it doesn't already exist
             if (!_this.sports.hasOwnProperty(sportUpdate.id))
-                _this.sports[sportUpdate.id] = sportUpdate;
+                _this.sports[sportUpdate.id] =
+                    new FonbetGeneral_1.FonbetGeneral.Sport(sportUpdate.id, sportUpdate.name, sportUpdate.parentId);
         });
     };
     FonbetParsingService.prototype.updateEvents = function (eventsUpdates) {
         var _this = this;
         this.events = {};
-        eventsUpdates.forEach(function (eventUpdate) { return _this.events[eventUpdate.id] = eventUpdate; });
+        eventsUpdates.forEach(function (eventUpdate) {
+            _this.events[eventUpdate.id] =
+                new FonbetGeneral_1.FonbetGeneral.Event(eventUpdate.id, eventUpdate.sportId, eventUpdate.team1Id, eventUpdate.team2Id, eventUpdate.team1, eventUpdate.team2, eventUpdate.name, eventUpdate.parentId);
+        });
     };
     FonbetParsingService.prototype.updateFactors = function (factorsUpdates) {
         var _this = this;
@@ -131,13 +135,23 @@ var FonbetParsingService = /** @class */ (function (_super) {
             throw Error("The event #" + factorUpdate.e + " doesn't exist");
         var event = this.events[factorUpdate.e];
         var mainEvent = this.getTopEvent(event);
+        event.team1 = mainEvent.team1;
+        event.team2 = mainEvent.team2;
+        event.team1Id = mainEvent.team1Id;
+        event.team2Id = mainEvent.team2Id;
         var sport = this.sports[event.sportId];
         var mainSport = this.getTopSport(sport);
+        sport.sport = mainSport.sport;
         if (!this.subscribedSports[mainSport.id])
             return null;
         var factorInfo = this.factorsCatalog[factorUpdate.f];
-        var scopeType = new General_1.General.SportEvent(sport, mainSport.name, mainEvent);
-        return fonbetSports[mainSport.name].makeFactor(scopeType, sport, event, factorUpdate, factorInfo);
+        var factor = new FonbetGeneral_1.FonbetGeneral.Factor(factorUpdate, factorInfo);
+        if (sport.sport === Odds_1.CommonFormats.Sport.TENNIS) {
+            return new TennisCommonFormats_1.TennisCommonFormats.Factor(sport, event, factor);
+        }
+        else {
+            return null;
+        }
     };
     FonbetParsingService.prototype.getTopSport = function (sport) {
         var topSport = sport;

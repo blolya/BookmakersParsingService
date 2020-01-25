@@ -3,19 +3,19 @@ import {CommonFormats} from "../../types/Odds";
 import {Requester} from "../../utils/Requester";
 import {FactorsCatalogUpdate} from "./updates/FactorsCatalogUpdate";
 import {Update} from "./updates/Update";
-import {General} from "./General";
-const fonbetSports = require("./sports/sports");
-
+import {FonbetGeneral} from "./FonbetGeneral";
+import {FonbetSports} from "./sports/FonbetSports";
+import {TennisCommonFormats} from "./sports/tennis/TennisCommonFormats";
 
 export class FonbetParsingService extends BookmakerParsingService {
   private factorsCatalogRequester: Requester;
   private updatesRequester: Requester;
 
   private factorsCatalog: { [id: number]: FactorsCatalogUpdate.Extrass } = {};
-  private subscribedSports: { [id: number]: Update.Sport } = {};
+  private subscribedSports: { [id: number]: FonbetGeneral.Sport } = {};
 
-  private sports: { [id: number]: Update.Sport } = {};
-  private events: { [id: number]: Update.Event } = {};
+  private sports: { [id: number]: FonbetGeneral.Sport } = {};
+  private events: { [id: number]: FonbetGeneral.Event } = {};
   private factors: { [id: string]: CommonFormats.Factor } = {};
 
   constructor() {
@@ -29,26 +29,24 @@ export class FonbetParsingService extends BookmakerParsingService {
     this.updatesRequester.on("response", rawUpdate => this.handleUpdate( JSON.parse(rawUpdate) ))
   }
 
-  subscribeToSports(sports: CommonFormats.Sport[] = []): void {
+  subscribeToSports(sports: CommonFormats.Sport[] = []) {
     sports.forEach( sport => {
       this.subscribeToSport(sport);
     })
   }
 
-  subscribeToSport(sport?: CommonFormats.Sport): void {
+  subscribeToSport(sport?: CommonFormats.Sport) {
     if (!sport)
       return;
 
-    const sportId = fonbetSports[sport].id;
+    const sportId = FonbetSports.sports[sport].id;
 
     if (!this.subscribedSports[sportId])
       this.subscribedSports[sportId] = {
         id: sportId,
         parentId: 0,
-        kind: "",
-        regionId: 0,
-        sortOrder: "",
-        name: sport
+        name: sport,
+        sport: sport
       };
 
   }
@@ -110,13 +108,26 @@ export class FonbetParsingService extends BookmakerParsingService {
     sportsUpdates.forEach( (sportUpdate: Update.Sport) => {
       // Add a new Sport if it doesn't already exist
       if (!this.sports.hasOwnProperty(sportUpdate.id))
-        this.sports[sportUpdate.id] = sportUpdate;
+        this.sports[sportUpdate.id] =
+          new FonbetGeneral.Sport(sportUpdate.id, sportUpdate.name, sportUpdate.parentId);
     });
   }
 
   private updateEvents(eventsUpdates: Update.Event[]) {
     this.events = {};
-    eventsUpdates.forEach( (eventUpdate: Update.Event) => this.events[eventUpdate.id] = eventUpdate );
+    eventsUpdates.forEach( (eventUpdate: Update.Event) => {
+      this.events[eventUpdate.id] =
+        new FonbetGeneral.Event(
+          eventUpdate.id,
+          eventUpdate.sportId,
+          eventUpdate.team1Id,
+          eventUpdate.team2Id,
+          eventUpdate.team1,
+          eventUpdate.team2,
+          eventUpdate.name,
+          eventUpdate.parentId
+        )
+    } );
   }
 
   private updateFactors(factorsUpdates: Update.Factor[]) {
@@ -136,19 +147,27 @@ export class FonbetParsingService extends BookmakerParsingService {
 
     const event = this.events[factorUpdate.e];
     const mainEvent = this.getTopEvent(event);
+    event.team1 = mainEvent.team1;
+    event.team2 = mainEvent.team2;
+    event.team1Id = mainEvent.team1Id;
+    event.team2Id = mainEvent.team2Id;
 
     const sport = this.sports[event.sportId];
     const mainSport = this.getTopSport(sport);
-
+    sport.sport = mainSport.sport;
     if (!this.subscribedSports[mainSport.id]) return null;
 
     const factorInfo = this.factorsCatalog[factorUpdate.f];
-    const scopeType = new General.SportEvent(sport, mainSport.name, mainEvent);
+    const factor = new FonbetGeneral.Factor(factorUpdate, factorInfo);
 
-    return fonbetSports[mainSport.name].makeFactor(scopeType, sport, event, factorUpdate, factorInfo);
+    if (sport.sport === CommonFormats.Sport.TENNIS) {
+      return new TennisCommonFormats.Factor(sport, event, factor);
+    } else {
+      return null;
+    }
   }
 
-  getTopSport(sport: Update.Sport) {
+  getTopSport(sport: FonbetGeneral.Sport) {
     let topSport = sport;
 
     while (topSport.parentId)
@@ -156,7 +175,7 @@ export class FonbetParsingService extends BookmakerParsingService {
 
     return topSport;
   }
-  getTopEvent(event: Update.Event) {
+  getTopEvent(event: FonbetGeneral.Event) {
     let topEvent = event;
 
     while (topEvent.parentId)

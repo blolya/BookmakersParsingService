@@ -34,7 +34,7 @@ export namespace Update {
 
   export type Sport = {
     id: number,
-    parentId: number,
+    parentId?: number,
     kind: string,
     regionId: number,
     sortOrder: string,

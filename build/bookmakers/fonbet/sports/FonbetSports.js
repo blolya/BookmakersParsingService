@@ -1,8 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Odds_1 = require("../../../types/Odds");
-var FonbetSport;
-(function (FonbetSport) {
+var FonbetSports;
+(function (FonbetSports) {
+    FonbetSports.sports = {
+        SOCCER: {
+            id: 1,
+            sport: Odds_1.CommonFormats.Sport.SOCCER
+        },
+        BASKETBALL: {
+            id: 3,
+            sport: Odds_1.CommonFormats.Sport.BASKETBALL
+        },
+        TENNIS: {
+            id: 4,
+            sport: Odds_1.CommonFormats.Sport.TENNIS
+        }
+    };
     var Tennis = /** @class */ (function () {
         function Tennis(sportEvent, sport, event, factor, factorInfo) {
             this.id = 4;
@@ -110,5 +124,6 @@ var FonbetSport;
         }
         return Tennis;
     }());
-})(FonbetSport = exports.FonbetSport || (exports.FonbetSport = {}));
-//# sourceMappingURL=sports.js.map
+    FonbetSports.Tennis = Tennis;
+})(FonbetSports = exports.FonbetSports || (exports.FonbetSports = {}));
+//# sourceMappingURL=FonbetSports.js.map

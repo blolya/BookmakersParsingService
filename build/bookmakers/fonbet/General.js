@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var sports = require("./sports/sports");
+var sports = require("./sports/FonbetSports");
 var General;
 (function (General) {
     var SportEvent = /** @class */ (function () {
